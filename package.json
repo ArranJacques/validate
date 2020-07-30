@@ -1,0 +1,10 @@
+{
+    "name": "validate",
+    "version": "0.0.0",
+    "description": "Validation library",
+    "main": "index.ts",
+    "author": {
+        "name" : "Arran Jacques",
+        "email" : "arranjacques@gmail.com"
+    }
+}
