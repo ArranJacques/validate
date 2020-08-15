@@ -20,13 +20,12 @@ export function registerRule(name: string, rule: ValidationRule) {
 function parseRule(rule: string): [ValidationRule, string[]] {
 
     const [name, args] = rule.split(':');
-    const funcName = name.toLowerCase().replace(/[^a-zA-Z0-9]+(.)/g, ({}, chr) => chr.toUpperCase());
 
-    if (Rules[funcName] === undefined) {
+    if (Rules[name] === undefined) {
         throw new InvalidRule(rule);
     }
 
-    return [Rules[funcName], args ? args.split(',') : []];
+    return [Rules[name], args ? args.split(',') : []];
 }
 
 async function validate(prop: string, value: any, rules: string[], data: Data): Promise<void> {
