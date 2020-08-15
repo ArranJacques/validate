@@ -1,4 +1,4 @@
-export default async function (value: any, args?: string[]): Promise<true> {
+export default async function (value: any, args: string[]): Promise<void> {
 
     let v: string | null = null;
     if (typeof value === 'string') {
@@ -10,5 +10,4 @@ export default async function (value: any, args?: string[]): Promise<true> {
     if (v === null || !args || !args.length || args.indexOf(value) === -1) {
         throw new Error('matches');
     }
-    return true;
 }

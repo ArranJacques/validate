@@ -1,4 +1,4 @@
-export default async function (value: any): Promise<true> {
+export default async function (value: any): Promise<void> {
 
     let v: string | null = null;
     if (typeof value === 'string') {
@@ -10,6 +10,4 @@ export default async function (value: any): Promise<true> {
     if (v === null || !/^\d+$/.test(v)) {
         throw new Error('digits');
     }
-
-    return true;
 }

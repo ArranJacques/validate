@@ -1,37 +1,40 @@
 import * as r from './rules';
 import { ValidationError } from './support/errors';
-import { ValidationRule } from './support/types';
+import { Data, ValidationRule } from './support/types';
 
 const Rules: { [key: string]: ValidationRule } = {
+    array: r.array,
     digits: r.digits,
     email: r.email,
     matches: r.matches,
     max: r.max,
     min: r.min,
-    required: r.required
+    required: r.required,
+    same: r.same
 };
 
 export function registerRule(name: string, rule: ValidationRule) {
     Rules[name] = rule;
 }
 
-function parseRule(rule: string): [ValidationRule, any[] | undefined] {
+function parseRule(rule: string): [ValidationRule, string[]] {
     const [name, args] = rule.split(':');
     const funcName = name.toLowerCase().replace(/[^a-zA-Z0-9]+(.)/g, ({}, chr) => chr.toUpperCase());
     return Rules[funcName] !== undefined
-        ? [Rules[funcName], args ? args.split(',') : undefined]
-        : [async () => true, undefined];
+        ? [Rules[funcName], args ? args.split(',') : []]
+        : [async () => {}, undefined];
 }
 
-async function validate(prop: string, value: any, rules: string[] | undefined): Promise<true> {
+async function validate(prop: string, value: any, rules: string[], data: Data): Promise<void> {
 
-    if (!rules || !rules.length) {
-        return true;
+    if (!rules.length) {
+        return;
     }
 
     let hasValue: true | Error;
     try {
-        hasValue = await Rules.required(value);
+        await Rules.required(value, [], prop, data);
+        hasValue = true;
     } catch (e) {
         hasValue = e;
     }
@@ -45,20 +48,18 @@ async function validate(prop: string, value: any, rules: string[] | undefined): 
         }
     } else {
         if (hasValue !== true) {
-            return true;
+            return;
         }
     }
 
     for (const rule of rules) {
         const [func, args] = parseRule(rule);
-        await func(value, args, prop);
+        await func(value, args, prop, data);
     }
-
-    return true;
 }
 
 export default async function <R>(
-    data: { [key: string]: any },
+    data: Data,
     rules: { [key: string]: string[] },
     messages?: { [key: string]: string }
 ): Promise<R> {
@@ -67,7 +68,8 @@ export default async function <R>(
 
     for (const prop of Object.keys(rules)) {
         try {
-            await validate(prop, data[prop], rules[prop]);
+            const r = typeof rules[prop] === 'undefined' ? [] : rules[prop];
+            await validate(prop, data[prop], r, data);
         } catch (e) {
             const messageKey = `${prop}.${e.message}`;
             errors[prop] = messages && messages[messageKey] ? messages[messageKey] : e.message;

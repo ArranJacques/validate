@@ -1,6 +1,5 @@
-export default async function (value: any): Promise<true> {
+export default async function (value: any): Promise<void> {
     if (value === undefined || value === null || value === '') {
         throw new Error('required');
     }
-    return true;
 }
