@@ -1,5 +1,5 @@
 import * as r from './rules';
-import { ValidationError } from './support/errors';
+import { Failed, InvalidRule, ValidationError } from './support/errors';
 import { Data, ValidationRule } from './support/types';
 
 const Rules: { [key: string]: ValidationRule } = {
@@ -18,11 +18,15 @@ export function registerRule(name: string, rule: ValidationRule) {
 }
 
 function parseRule(rule: string): [ValidationRule, string[]] {
+
     const [name, args] = rule.split(':');
     const funcName = name.toLowerCase().replace(/[^a-zA-Z0-9]+(.)/g, ({}, chr) => chr.toUpperCase());
-    return Rules[funcName] !== undefined
-        ? [Rules[funcName], args ? args.split(',') : []]
-        : [async () => {}, undefined];
+
+    if (Rules[funcName] === undefined) {
+        throw new InvalidRule(rule);
+    }
+
+    return [Rules[funcName], args ? args.split(',') : []];
 }
 
 async function validate(prop: string, value: any, rules: string[], data: Data): Promise<void> {
@@ -59,9 +63,9 @@ async function validate(prop: string, value: any, rules: string[], data: Data): 
 }
 
 export default async function <R>(
-    data: Data,
-    rules: { [key: string]: string[] },
-    messages?: { [key: string]: string }
+  data: Data,
+  rules: { [key: string]: string[] },
+  messages?: { [key: string]: string }
 ): Promise<R> {
 
     const errors: { [key: string]: string } = {};
@@ -71,8 +75,12 @@ export default async function <R>(
             const r = typeof rules[prop] === 'undefined' ? [] : rules[prop];
             await validate(prop, data[prop], r, data);
         } catch (e) {
-            const messageKey = `${prop}.${e.message}`;
-            errors[prop] = messages && messages[messageKey] ? messages[messageKey] : e.message;
+            if (e instanceof Failed) {
+                const messageKey = `${prop}.${e.message}`;
+                errors[prop] = messages && messages[messageKey] ? messages[messageKey] : e.message;
+            } else {
+                throw e;
+            }
         }
     }
 

@@ -1,3 +1,5 @@
+import { Failed } from '../support/errors';
+
 export default async function (value: any): Promise<void> {
 
     let v: string | null = null;
@@ -8,6 +10,6 @@ export default async function (value: any): Promise<void> {
     }
 
     if (v === null || !/^\d+$/.test(v)) {
-        throw new Error('digits');
+        throw new Failed('digits');
     }
 }

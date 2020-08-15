@@ -1,3 +1,5 @@
+import { Failed } from '../support/errors';
+
 export default async function (value: any, args: string[]): Promise<void> {
 
     let v: string | null = null;
@@ -8,6 +10,6 @@ export default async function (value: any, args: string[]): Promise<void> {
     }
 
     if (v === null || !args || !args.length || args.indexOf(value) === -1) {
-        throw new Error('matches');
+        throw new Failed('matches');
     }
 }

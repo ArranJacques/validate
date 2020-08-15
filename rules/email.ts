@@ -1,3 +1,5 @@
+import { Failed } from '../support/errors';
+
 export default async function (value: any): Promise<void> {
 
     let v: string | null = null;
@@ -7,6 +9,6 @@ export default async function (value: any): Promise<void> {
 
     // anystring@anystring.anystring
     if (v === null || !/\S+@\S+\.\S+/.test(v)) {
-        throw new Error('email');
+        throw new Failed('email');
     }
 }
