@@ -1,6 +1,6 @@
 import { Failed } from '../support/errors';
 
-export default async function (value: any, args: string[]): Promise<void> {
+export default async function (value: any, args?: string[]): Promise<void> {
 
     let v: string | null = null;
     if (typeof value === 'string') {
